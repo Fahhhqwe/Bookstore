@@ -47,7 +47,6 @@ export default async function HomePage() {
           >
             <div
               className="absolute inset-0 bg-cover bg-center brightness-90 group-hover:brightness-100 transition-all duration-300"
-              style={{ backgroundImage: "url('/bg-books.jpg')" }}
             />
             <div className="absolute inset-0 bg-gradient-to-b from-blue-600/60 via-indigo-700/60 to-indigo-900/70 
         group-hover:from-indigo-600/70 group-hover:via-blue-700/70 group-hover:to-blue-900/70
