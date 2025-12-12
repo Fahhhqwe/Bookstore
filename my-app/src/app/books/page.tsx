@@ -1,6 +1,6 @@
 import BookCard from "@/components/BookCard";
 
-export const dynamic = "force-dynamic"; // บังคับให้ page นี้เป็น dynamic server
+export const dynamic = "force-dynamic";
 
 interface Book {
     bks_id: number;
@@ -11,6 +11,7 @@ interface Book {
     bks_description: string;
     bks_price: number;
     bks_url: string;
+    ctg_name?: string;
 }
 
 export default async function BooksPage() {
@@ -24,8 +25,8 @@ export default async function BooksPage() {
         if (!res.ok) throw new Error("Failed to fetch books");
 
         books = await res.json();
-    } catch (error) {
-        console.error("Error fetching books:", error);
+    } catch (err) {
+        console.error("Error fetching books:", err);
     }
 
     return (
@@ -33,9 +34,7 @@ export default async function BooksPage() {
             <h1 className="text-3xl font-bold mb-8 text-center">All Books</h1>
 
             {books.length === 0 ? (
-                <p className="text-center text-gray-500">
-                    No books available. Please try again later.
-                </p>
+                <p className="text-center text-gray-500">No books available. Please try again later.</p>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
                     {books.map((book) => (
