@@ -1,5 +1,7 @@
 import BookCard from "@/components/BookCard";
 
+export const dynamic = "force-dynamic"; // บังคับให้ page นี้เป็น dynamic server
+
 interface Book {
     bks_id: number;
     bks_name: string;
