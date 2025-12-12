@@ -6,6 +6,7 @@ import { CartProvider } from "./context/CartContext";
 import AuthProvider from "./context/AuthContext";
 import Header from "@/components/Header";
 import { usePathname } from "next/navigation";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -18,6 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <CartProvider>
             {!isLoginPage && <Header />}
             <main>{children}</main>
+            <SpeedInsights />
           </CartProvider>
         </AuthProvider>
       </body>
