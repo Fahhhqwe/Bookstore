@@ -1,4 +1,3 @@
-import Image from "next/image";
 import BookCard from "@/components/BookCard";
 
 interface Book {
@@ -13,23 +12,36 @@ interface Book {
 }
 
 export default async function BooksPage() {
-    const res = await fetch("http://localhost:3000/api/books", {
-        cache: "no-store",
-    });
+    let books: Book[] = [];
 
-    const books: Book[] = await res.json();
+    try {
+        // ใช้ relative URL สำหรับ API fetch ปลอดภัยทั้ง dev/production
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/api/books`, {
+            cache: "no-store",
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch books");
+
+        books = await res.json();
+    } catch (error) {
+        console.error("Error fetching books:", error);
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 px-8 py-12">
-
             <h1 className="text-3xl font-bold mb-8 text-center">All Books</h1>
 
-            {/* GRID LIST */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-                {books.map((book) => (
-                    <BookCard key={book.bks_id} book={book} />
-                ))}
-            </div>
+            {books.length === 0 ? (
+                <p className="text-center text-gray-500">
+                    No books available. Please try again later.
+                </p>
+            ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                    {books.map((book) => (
+                        <BookCard key={book.bks_id} book={book} />
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

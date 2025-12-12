@@ -8,15 +8,22 @@ export default async function BookDetail({ params }: any) {
         return <p>Invalid book ID</p>;
     }
 
-    const { rows } = await pool.query(
-        `SELECT b.*, c.ctg_name
-         FROM books b
-         LEFT JOIN categories c ON b.bks_ctg_id = c.ctg_id
-         WHERE b.bks_id = $1`,
-        [id]
-    );
+    let book: any = null;
 
-    const book = rows[0];
+    try {
+        const { rows } = await pool.query(
+            `SELECT b.*, c.ctg_name
+       FROM books b
+       LEFT JOIN categories c ON b.bks_ctg_id = c.ctg_id
+       WHERE b.bks_id = $1`,
+            [id]
+        );
+
+        book = rows[0];
+    } catch (error) {
+        console.error("Error fetching book:", error);
+        return <p>Error loading book data.</p>;
+    }
 
     if (!book) {
         return <p>Book not found.</p>;
@@ -27,10 +34,11 @@ export default async function BookDetail({ params }: any) {
             <div className="flex gap-6">
                 <div className="relative w-64 h-96 rounded-xl overflow-hidden">
                     <Image
-                        src={book.bks_url}
+                        src={book.bks_url || "/placeholder.jpg"} // fallback ถ้า URL ไม่มี
                         alt={book.bks_name}
                         fill
                         className="object-cover"
+                        unoptimized
                     />
                 </div>
 
@@ -40,15 +48,15 @@ export default async function BookDetail({ params }: any) {
                         <p className="text-gray-600 mt-2 text-lg">{book.bks_author}</p>
 
                         <p className="mt-4">
-                            <span className="font-semibold">Category:</span> {book.ctg_name}
+                            <span className="font-semibold">Category:</span> {book.ctg_name || "N/A"}
                         </p>
 
                         <p>
-                            <span className="font-semibold">Year:</span> {book.bks_year}
+                            <span className="font-semibold">Year:</span> {book.bks_year || "N/A"}
                         </p>
 
                         <p className="text-xl font-semibold mt-4">
-                            {book.bks_price} บาท
+                            {book.bks_price ? `${book.bks_price} บาท` : "Price N/A"}
                         </p>
                     </div>
                 </div>
