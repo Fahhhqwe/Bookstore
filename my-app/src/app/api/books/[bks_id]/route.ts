@@ -1,35 +1,29 @@
+import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/app/lib/db";
-import { NextResponse } from "next/server";
 
-export async function DELETE(
-    request: Request,
-    context: { params: Promise<{ bks_id: string }> }
-) {
-    const { bks_id } = await context.params; // <-- ต้อง await
-
-    const id = Number(bks_id);
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+    const id = Number(params.id);
 
     if (isNaN(id)) {
-        return NextResponse.json(
-            { error: "Invalid book ID", id: bks_id },
-            { status: 400 }
-        );
+        return NextResponse.json({ error: "Invalid book ID" }, { status: 400 });
     }
 
-    const { rows } = await pool.query(
-        `DELETE FROM books WHERE bks_id = $1 RETURNING *`,
-        [id]
-    );
-
-    if (rows.length === 0) {
-        return NextResponse.json(
-            { error: "Book not found" },
-            { status: 404 }
+    try {
+        const { rows } = await pool.query(
+            `SELECT b.*, c.ctg_name
+       FROM books b
+       LEFT JOIN categories c ON b.bks_ctg_id = c.ctg_id
+       WHERE b.bks_id = $1`,
+            [id]
         );
-    }
 
-    return NextResponse.json({
-        message: "Book deleted successfully",
-        deleted: rows[0],
-    });
+        if (rows.length === 0) {
+            return NextResponse.json({ error: "Book not found" }, { status: 404 });
+        }
+
+        return NextResponse.json(rows[0], { status: 200 });
+    } catch (error) {
+        console.error("Error fetching book:", error);
+        return NextResponse.json({ error: "Failed to fetch book" }, { status: 500 });
+    }
 }

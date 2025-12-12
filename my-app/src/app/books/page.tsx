@@ -17,11 +17,10 @@ export default async function BooksPage() {
     let books: Book[] = [];
 
     try {
-        // ใช้ relative URL สำหรับ API fetch ปลอดภัยทั้ง dev/production
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/api/books`, {
-            cache: "no-store",
-        });
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+        if (!baseUrl) throw new Error("NEXT_PUBLIC_BASE_URL is not set");
 
+        const res = await fetch(`${baseUrl}/api/books`, { cache: "no-store" });
         if (!res.ok) throw new Error("Failed to fetch books");
 
         books = await res.json();
