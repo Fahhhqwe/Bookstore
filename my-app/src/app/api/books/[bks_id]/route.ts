@@ -3,10 +3,13 @@ import { pool } from "@/app/lib/db";
 
 export async function GET(
     req: NextRequest,
-    context: { params: { bks_id: string } }
+    context: { params: Promise<{ bks_id: string }> } // เปลี่ยน type เป็น Promise
 ) {
-    const id = Number(context.params.bks_id);
-    if (isNaN(id)) return NextResponse.json({ error: "Invalid book id" }, { status: 400 });
+    const resolvedParams = await context.params; // await เพื่อให้ได้ object จริง
+    const id = Number(resolvedParams.bks_id);
+
+    if (isNaN(id))
+        return NextResponse.json({ error: "Invalid book id" }, { status: 400 });
 
     try {
         const { rows } = await pool.query(
@@ -16,7 +19,9 @@ export async function GET(
        WHERE b.bks_id = $1`,
             [id]
         );
-        if (!rows[0]) return NextResponse.json({ error: "Book not found" }, { status: 404 });
+
+        if (!rows[0])
+            return NextResponse.json({ error: "Book not found" }, { status: 404 });
 
         return NextResponse.json(rows[0]);
     } catch (err) {
