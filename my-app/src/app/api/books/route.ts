@@ -1,16 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
-import { pool } from "@/app/lib/db";
+import { supabase } from "@/app/lib/db";
 
 export async function GET(req: NextRequest) {
     try {
-        const { rows } = await pool.query(
-            `SELECT b.*, c.ctg_name
-       FROM books b
-       LEFT JOIN categories c ON b.bks_ctg_id = c.ctg_id`
-        );
-        return NextResponse.json(rows);
+        const { data, error } = await supabase
+            .from('books')
+            .select(`
+                *,
+                categories:ctg_id (
+                    ctg_name
+                )
+            `);
+
+        if (error) {
+            console.error(error);
+            return NextResponse.json({ error: "DB error" }, { status: 500 });
+        }
+
+        return NextResponse.json(data);
     } catch (err) {
         console.error(err);
-        return NextResponse.json({ error: "DB error" }, { status: 500 });
+        return NextResponse.json({ error: "Server error" }, { status: 500 });
     }
 }
