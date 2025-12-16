@@ -1,12 +1,11 @@
-import { pool } from "@/app/lib/db";
+import { supabase } from "@/app/lib/db";
 import { NextResponse } from "next/server";
 
 export async function DELETE(
     request: Request,
     context: { params: Promise<{ ctg_id: string }> }
 ) {
-    const { ctg_id } = await context.params; // <-- ต้อง await
-
+    const { ctg_id } = await context.params;
     const id = Number(ctg_id);
 
     if (isNaN(id)) {
@@ -16,20 +15,38 @@ export async function DELETE(
         );
     }
 
-    const { rows } = await pool.query(
-        `DELETE FROM categories WHERE ctg_id = $1 RETURNING *`,
-        [id]
-    );
+    try {
+        const { data, error } = await supabase
+            .from("categories")
+            .delete()
+            .eq("ctg_id", id)
+            .select()
+            .single(); // เหมือน RETURNING *
 
-    if (rows.length === 0) {
+        if (error) {
+            if (error.code === "PGRST116") {
+                return NextResponse.json(
+                    { error: "Category not found" },
+                    { status: 404 }
+                );
+            }
+
+            console.error(error);
+            return NextResponse.json(
+                { error: "DB error" },
+                { status: 500 }
+            );
+        }
+
+        return NextResponse.json({
+            message: "Category deleted successfully",
+            deleted: data,
+        });
+    } catch (err) {
+        console.error(err);
         return NextResponse.json(
-            { error: "Category not found" },
-            { status: 404 }
+            { error: "Server error" },
+            { status: 500 }
         );
     }
-
-    return NextResponse.json({
-        message: "Category deleted successfully",
-        deleted: rows[0],
-    });
 }

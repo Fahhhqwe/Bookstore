@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { pool } from "@/app/lib/db";
+import { supabase } from "@/app/lib/db";
 
 export async function GET(
     req: NextRequest,
@@ -8,24 +8,34 @@ export async function GET(
     const resolvedParams = await context.params; // await เพื่อให้ได้ object จริง
     const id = Number(resolvedParams.bks_id);
 
-    if (isNaN(id))
+    if (isNaN(id)) {
         return NextResponse.json({ error: "Invalid book id" }, { status: 400 });
+    }
 
     try {
-        const { rows } = await pool.query(
-            `SELECT b.*, c.ctg_name
-       FROM books b
-       LEFT JOIN categories c ON b.bks_ctg_id = c.ctg_id
-       WHERE b.bks_id = $1`,
-            [id]
-        );
+        const { data, error } = await supabase
+            .from("books")
+            .select(`
+                *,
+                categories:ctg_id (
+                ctg_name
+                )
+            `)
+            .eq("bks_id", id)
+            .single();
 
-        if (!rows[0])
-            return NextResponse.json({ error: "Book not found" }, { status: 404 });
+        if (error) {
+            if (error.code == "PGRST116") {
+                return NextResponse.json({ error: "Book not found" }, { status: 404 });
+            }
 
-        return NextResponse.json(rows[0]);
+            console.log(error);
+            return NextResponse.json({ error: "DB error" }, { status: 500 });
+        }
+
+        return NextResponse.json(data);
     } catch (err) {
         console.error(err);
-        return NextResponse.json({ error: "DB error" }, { status: 500 });
+        return NextResponse.json({ error: "Server error" }, { status: 500 });
     }
 }
