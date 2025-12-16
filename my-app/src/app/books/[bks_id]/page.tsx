@@ -21,7 +21,7 @@ export default async function BookDetail({ params }: { params: { id: string } })
         const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
         if (!baseUrl) throw new Error("NEXT_PUBLIC_BASE_URL is not set");
 
-        const res = await fetch(`${baseUrl}/api/books/${params.id}`, { cache: "no-store" });
+        const res = await fetch(`/api/books/${params.id}`, { cache: "no-store" });
         if (!res.ok) throw new Error("Failed to fetch book");
 
         book = await res.json();
