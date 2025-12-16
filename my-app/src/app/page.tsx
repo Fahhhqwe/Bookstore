@@ -14,12 +14,13 @@ interface Book {
 }
 
 export default async function HomePage() {
-  const res = await fetch("http://localhost:3000/api/books", {
-    cache: "no-store",
-  });
+  const res = await fetch("http://localhost:3000/api/books");
   const books: Book[] = await res.json();
 
-  const featured = books.slice(0, 5);
+  console.log("BOOKS TYPE:", Array.isArray(books));
+  console.log("BOOKS VALUE:", books);
+
+  const featured = Array.isArray(books) ? books.slice(0, 5) : [];
 
   return (
     <div className="min-h-screen bg-gray-50">
